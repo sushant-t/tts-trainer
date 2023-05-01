@@ -20,7 +20,9 @@ def transcribe_file(file_path) -> str:
 def transcribe_all(base_name):
     base_path = "./dataset/{0}".format(base_name)
     wavs_path = "{0}/wavs".format(base_path)
-    metadata: pd.DataFrame = pd.DataFrame(columns=["file_name", "transcription"])
+    metadata: pd.DataFrame = pd.DataFrame(
+        columns=["file_name", "transcription", "normalized_transcription"]
+    )
 
     files = sorted(
         os.listdir(wavs_path),
@@ -30,12 +32,18 @@ def transcribe_all(base_name):
     )
 
     for file in files:
+        transcription = transcribe_file(os.path.join(wavs_path, file)).strip()
         metadata.loc[len(metadata)] = {
             "file_name": os.path.splitext(file)[0],
-            "transcription": transcribe_file(os.path.join(wavs_path, file)),
+            "transcription": transcription,
+            "normalized_transcription": transcription,
         }
         print(metadata.loc[len(metadata) - 1])
 
     metadata.to_csv(
-        os.path.join(base_path, "metadata.csv"), header=False, sep="|", index=False
+        os.path.join(base_path, "metadata.csv"),
+        header=False,
+        sep="|",
+        index=False,
+        lineterminator="\n",
     )
