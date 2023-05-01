@@ -1,2 +1,2 @@
-# tts-dataset-generator
-Generate audio datasets for training Text-To-Speech models, through smart audio splitting with silence detection, and transcription using Whisper.
+# TTS Trainer
+Train Text-To-Speech models using automated dataset generation techniques, such as smart audio splitting with silence detection, and transcription using Whisper.
