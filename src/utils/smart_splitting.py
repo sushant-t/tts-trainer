@@ -47,9 +47,7 @@ def process_split(filepath):
         )
         wavPath = os.path.join(
             ROOT_DIR,
-            "./dataset/{0}/wavs/{1}_{2}.wav".format(
-                speaker_name, base_name.replace("_trimmed", ""), i
-            ),
+            "./dataset/{0}/wavs/{1}_{2}.wav".format(speaker_name, base_name, i),
         )
         if not os.path.exists(wavPath):
             os.makedirs(os.path.dirname(wavPath), exist_ok=True)
