@@ -5,6 +5,8 @@ from src.utils.audio_cleaning import (
     trim_audio_from_diarization,
     normalize_audio,
     save_trimmed_audio,
+    organize_input_samples,
+    rename_input_samples,
 )
 from src.utils.smart_splitting import process_split
 from src.utils.transcribe import transcribe_all
@@ -27,17 +29,23 @@ def clean_audio(audio_path):
     return trimmed_output_path
 
 
-def generate_data(path):
-    print("cleaning audio file")
-    clean_path = clean_audio(path)
+def generate_data(folder):
+    organize_input_samples(folder)
+    speaker_name = os.path.basename(folder)
+    rename_input_samples(speaker_name, folder)
 
-    print("splitting file...")
-    process_split(clean_path)
+    for file in os.listdir(folder):
+        path = os.path.join(folder, file)
+        print("cleaning audio file")
+        clean_path = clean_audio(path)
 
-    base_name = os.path.splitext(os.path.basename(clean_path))[0]
+        print("splitting file...")
+        process_split(clean_path)
 
-    print("transcribing file segments...")
-    transcribe_all(base_name)
+        base_name = os.path.splitext(os.path.basename(clean_path))[0]
+
+        print("transcribing file segments...")
+        transcribe_all(base_name)
 
 
 if __name__ == "__main__":
@@ -45,9 +53,9 @@ if __name__ == "__main__":
         description="Script for generating dataset",
         formatter_class=argparse.ArgumentDefaultsHelpFormatter,
     )
-    parser.add_argument("-i", "--input_file", help="input audio file")
+    parser.add_argument("-i", "--input_folder", help="input audio folder")
     args = parser.parse_args()
-    if args.input_file and os.path.exists(args.input_file):
-        generate_data(args.input_file)
+    if args.input_folder and os.path.exists(args.input_folder):
+        generate_data(args.input_folder)
     else:
         print("Invalid input file")

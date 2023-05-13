@@ -1,7 +1,4 @@
 import whisper
-from pydub import AudioSegment
-import numpy as np
-from pydub.playback import play
 import pandas as pd
 import os
 from src.config.definitions import ROOT_DIR
@@ -21,9 +18,14 @@ def transcribe_file(file_path) -> str:
 def transcribe_all(base_name):
     base_path = os.path.join(ROOT_DIR, "./dataset/{0}".format(base_name))
     wavs_path = "{0}/wavs".format(base_path)
-    metadata: pd.DataFrame = pd.DataFrame(
-        columns=["file_name", "transcription", "normalized_transcription"]
-    )
+    metadata_path = os.path.join(base_path, "metadata.csv")
+
+    columns = ["file_name", "transcription", "normalized_transcription"]
+    if os.path.exists(metadata_path):
+        metadata = pd.read_csv(metadata_path, sep="|", header=None, names=columns)
+
+    else:
+        metadata: pd.DataFrame = pd.DataFrame(columns=columns)
 
     files = sorted(
         os.listdir(wavs_path),
@@ -42,7 +44,7 @@ def transcribe_all(base_name):
         print(metadata.loc[len(metadata) - 1])
 
     metadata.to_csv(
-        os.path.join(base_path, "metadata.csv"),
+        metadata_path,
         header=False,
         sep="|",
         index=False,
