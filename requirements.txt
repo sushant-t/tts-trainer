@@ -7,3 +7,8 @@ pydub
 torchvision
 torchaudio
 pyyaml
+pytest
+pytest-mock
+librosa
+soundfile
+noisereduce
