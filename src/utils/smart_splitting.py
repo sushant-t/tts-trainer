@@ -4,6 +4,7 @@ from pydub.silence import split_on_silence
 import os
 from src.config.definitions import ROOT_DIR
 from src.utils.audio_cleaning import normalize_audio, prepare_chunk_for_training
+import re
 
 
 def split(filepath, min_silence=500):
@@ -21,7 +22,9 @@ def split(filepath, min_silence=500):
 def process_split(filepath):
     chunks = split(filepath)
     base_name = os.path.splitext(os.path.basename(filepath))[0]
-    wavs_path = os.path.join(ROOT_DIR, "./dataset/{0}/wavs".format(base_name))
+
+    speaker_name = re.search(r"(.*?)_[0-9]+", base_name).groups()[0]
+    wavs_path = os.path.join(ROOT_DIR, "./dataset/{0}/wavs".format(speaker_name))
     files = glob.glob("{0}/*".format(wavs_path))
     for f in files:
         os.remove(f)
@@ -37,9 +40,16 @@ def process_split(filepath):
         normalized_chunk: AudioSegment = normalize_audio(audio_chunk, -20.0)
 
         # Export the audio chunk with new bitrate.
-        print("Exporting {0} chunk{1}.wav.".format(base_name, i))
+        print(
+            "Exporting speaker: {0}, file: {0} chunk{1}.wav.".format(
+                speaker_name, base_name, i
+            )
+        )
         wavPath = os.path.join(
-            ROOT_DIR, "./dataset/{0}/wavs/{0}_{1}.wav".format(base_name, i)
+            ROOT_DIR,
+            "./dataset/{0}/wavs/{1}_{2}.wav".format(
+                speaker_name, base_name.replace("_trimmed", ""), i
+            ),
         )
         if not os.path.exists(wavPath):
             os.makedirs(os.path.dirname(wavPath), exist_ok=True)
