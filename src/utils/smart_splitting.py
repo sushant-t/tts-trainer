@@ -41,7 +41,7 @@ def process_split(filepath):
 
         # Export the audio chunk with new bitrate.
         print(
-            "Exporting speaker: {0}, file: {0} chunk{1}.wav.".format(
+            "Exporting speaker: {0}, file: {1},  chunk: {2}.wav.".format(
                 speaker_name, base_name, i
             )
         )
@@ -58,4 +58,4 @@ def process_split(filepath):
             wavPath,
             format="wav",
         )
-    return chunks
+    return wavs_path

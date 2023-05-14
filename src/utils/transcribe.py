@@ -15,15 +15,12 @@ def transcribe_file(file_path) -> str:
     return result["text"]
 
 
-def transcribe_all(base_name):
-    base_path = os.path.join(ROOT_DIR, "./dataset/{0}".format(base_name))
-    wavs_path = "{0}/wavs".format(base_path)
-    metadata_path = os.path.join(base_path, "metadata.csv")
+def transcribe_all(wavs_path):
+    metadata_path = os.path.abspath(os.path.join(wavs_path, "..", "metadata.csv"))
 
     columns = ["file_name", "transcription", "normalized_transcription"]
     if os.path.exists(metadata_path):
         metadata = pd.read_csv(metadata_path, sep="|", header=None, names=columns)
-
     else:
         metadata: pd.DataFrame = pd.DataFrame(columns=columns)
 
@@ -36,12 +33,23 @@ def transcribe_all(base_name):
 
     for file in files:
         transcription = transcribe_file(os.path.join(wavs_path, file)).strip()
-        metadata.loc[len(metadata)] = {
+        data = {
             "file_name": os.path.splitext(file)[0],
             "transcription": transcription,
             "normalized_transcription": transcription,
         }
-        print(metadata.loc[len(metadata) - 1])
+        if not metadata.loc[metadata["file_name"] == file].empty:
+            metadata.loc[metadata["file_name"] == file, list(data.keys())] = list(
+                data.values()
+            )
+            print(metadata.loc[metadata["file_name"] == file])
+        else:
+            metadata.loc[len(metadata)] = {
+                "file_name": os.path.splitext(file)[0],
+                "transcription": transcription,
+                "normalized_transcription": transcription,
+            }
+            print(metadata.loc[len(metadata) - 1])
 
     metadata.to_csv(
         metadata_path,
