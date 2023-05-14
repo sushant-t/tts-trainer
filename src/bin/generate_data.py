@@ -19,7 +19,7 @@ def generate_data(**kwargs):
     speaker_name = os.path.basename(folder)
     rename_input_samples(speaker_name, folder)
     wavs_path = os.path.join(ROOT_DIR, "./dataset/{0}/wavs".format(speaker_name))
-    generated_files = set(
+    generated_files = os.path.exists(wavs_path) and set(
         [re.search(r"(.*?)_[0-9]+", f).group() for f in os.listdir(wavs_path)]
     )
     raw_folder = os.path.join(folder, "raw")
@@ -28,6 +28,7 @@ def generate_data(**kwargs):
             continue
         if (
             no_overwrite
+            and generated_files
             and os.path.splitext(os.path.basename(file))[0] in generated_files
         ):
             continue
