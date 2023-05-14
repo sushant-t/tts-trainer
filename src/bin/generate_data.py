@@ -14,7 +14,7 @@ import re
 
 def generate_data(**kwargs):
     folder = kwargs["input_folder"]
-    no_overwrite = kwargs["no_overwrite"]
+    overwrite = kwargs["overwrite"]
     organize_input_samples(folder)
     speaker_name = os.path.basename(folder)
     rename_input_samples(speaker_name, folder)
@@ -27,7 +27,7 @@ def generate_data(**kwargs):
         if not is_audio_file(file):
             continue
         if (
-            no_overwrite
+            not overwrite
             and generated_files
             and os.path.splitext(os.path.basename(file))[0] in generated_files
         ):
@@ -50,9 +50,9 @@ if __name__ == "__main__":
     )
     parser.add_argument("-i", "--input_folder", help="input audio folder")
     parser.add_argument(
-        "--no_overwrite",
+        "--overwrite",
         action=argparse.BooleanOptionalAction,
-        help="do not overwrite any duplicates in dataset",
+        help="overwrite any duplicates in dataset",
     )
     args = parser.parse_args()
     full_path = (
@@ -61,6 +61,6 @@ if __name__ == "__main__":
         else os.path.exists(os.path.join(os.getcwd(), args.input_folder))
     )
     if args.input_folder and os.path.exists(full_path):
-        generate_data(input_folder=args.input_folder, no_overwrite=args.no_overwrite)
+        generate_data(input_folder=args.input_folder, overwrite=args.overwrite)
     else:
         print("Invalid input file")
