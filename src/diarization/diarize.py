@@ -1,3 +1,4 @@
+import numpy as np
 from pyannote.audio import Pipeline
 from pyannote.core import Annotation
 import os
@@ -20,14 +21,14 @@ def update_diarization_yaml():
     file.write(yaml.dump(data_map, default_flow_style=False))
 
 
-def diarize_audio(audio_path):
+def diarize_audio(audio_data):
     update_diarization_yaml()
     diarize_pipeline = Pipeline.from_pretrained(YAML_PATH)
     ### push inference to GPU if available
     if torch.cuda.is_available():
         diarize_pipeline = diarize_pipeline.to(0)
 
-    dia = diarize_pipeline(audio_path)
+    dia = diarize_pipeline({"waveform": audio_data[0], "sample_rate": audio_data[1]})
     assert isinstance(dia, Annotation)
 
     speaker_turns = []
@@ -66,7 +67,7 @@ def remove_other_speakers(speaker_turns):
     return speaker_turns
 
 
-def generate_speaker_timestamps(audio_path):
-    speaker_turns = diarize_audio(audio_path)
+def generate_speaker_timestamps(audio_data):
+    speaker_turns = diarize_audio(audio_data)
     filtered_speaker_turns = remove_other_speakers(speaker_turns)
     return filtered_speaker_turns

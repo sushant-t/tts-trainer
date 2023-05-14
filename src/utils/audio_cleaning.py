@@ -1,4 +1,5 @@
 ## Clean and enhance raw audio
+import numpy as np
 from pydub import AudioSegment
 import os
 import librosa
@@ -56,17 +57,9 @@ def rename_input_samples(speaker_name, input_folder):
 
 
 def filter_noise(audio_path):
-    data, sampling_rate = librosa.load(audio_path)
+    data, sampling_rate = librosa.load(audio_path, mono=True)
     reduced_noise = nr.reduce_noise(y=data, sr=sampling_rate, prop_decrease=0.7)
-
-    dir_name = os.path.dirname(audio_path)
-    file_name = os.path.splitext(os.path.basename(audio_path))[0]
-    ext = ".wav"
-
-    output_path = os.path.join(dir_name, file_name + ext)
-    sf.write(output_path, reduced_noise, samplerate=22050, subtype="PCM_16")
-
-    return output_path
+    return (reduced_noise, sampling_rate)
 
 
 def trim_audio_from_diarization(audio, speaker_turns):
@@ -114,14 +107,23 @@ def is_audio_file(audio_path):
 
 
 def clean_audio(audio_path):
-    output_path = filter_noise(audio_path)
+    audio_data = filter_noise(audio_path)
+    filtered_speaker_turns = generate_speaker_timestamps(audio_data)
 
-    filtered_speaker_turns = generate_speaker_timestamps(output_path)
+    audio_arr, sample_rate = audio_data
+    num_channels = audio_arr[0] if len(audio_arr.shape) > 1 else 1
+    audio_arr = np.array(audio_arr * (1 << 15), dtype=np.int16)
 
-    audio = AudioSegment.from_file(output_path)
-    audio = normalize_audio(audio, -20.0)
+    audio_segment = AudioSegment(
+        audio_arr.tobytes(),
+        frame_rate=sample_rate,
+        sample_width=audio_arr.itemsize,
+        channels=num_channels,
+    )
+
+    audio = normalize_audio(audio_segment, -20.0)
     trimmed_output = trim_audio_from_diarization(audio, filtered_speaker_turns)
 
-    trimmed_output_path = save_trimmed_audio(output_path, trimmed_output)
+    trimmed_output_path = save_trimmed_audio(audio_path, trimmed_output)
 
     return trimmed_output_path
