@@ -6,6 +6,7 @@ from collections import Counter
 from src.config.definitions import ROOT_DIR
 from pydub import AudioSegment
 import torch
+from itertools import groupby
 
 YAML_PATH = os.path.join(ROOT_DIR, "diarization/pipelines/speaker_diarization.yaml")
 MODEL_PATH = os.path.join(ROOT_DIR, "diarization/models/pytorch_model.bin")
@@ -38,15 +39,25 @@ def diarize_audio(audio_path):
     return speaker_turns
 
 
+def get_main_speaker(speaker_turns):
+    speaker_intervals = [
+        (turn["speaker"], turn["end"] - turn["start"]) for turn in speaker_turns
+    ]
+
+    freq = []
+    for i, group in groupby(sorted(speaker_intervals), key=lambda x: x[0]):
+        freq.append((i, sum(v[1] for v in group)))
+
+    return sorted(freq, reverse=True, key=lambda f: f[1])[0][0]
+
+
 def remove_other_speakers(speaker_turns):
     # make sure majority speaker is obvious, ties are not handled
-    main_speaker, _ = Counter(map(lambda k: k["speaker"], speaker_turns)).most_common()[
-        0
-    ]
     for i in range(0, len(speaker_turns) - 1):
         if speaker_turns[i + 1]["start"] < speaker_turns[i]["end"]:  # overlaps
             speaker_turns[i]["end"] = speaker_turns[i + 1]["start"]
 
+    main_speaker = get_main_speaker(speaker_turns)
     speaker_turns = list(
         filter(lambda turn: turn["speaker"] == main_speaker, speaker_turns)
     )
