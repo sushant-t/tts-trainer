@@ -23,8 +23,8 @@ def diarize_audio(audio_path):
     update_diarization_yaml()
     diarize_pipeline = Pipeline.from_pretrained(YAML_PATH)
     ### push inference to GPU if available
-    # for i in range(torch.cuda.device_count()):
-    #     diarize_pipeline = diarize_pipeline.to(0)
+    if torch.cuda.is_available():
+        diarize_pipeline = diarize_pipeline.to(0)
 
     dia = diarize_pipeline(audio_path)
     assert isinstance(dia, Annotation)
