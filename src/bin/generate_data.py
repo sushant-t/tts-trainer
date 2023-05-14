@@ -40,7 +40,7 @@ def generate_data(**kwargs):
         split_path = process_split(clean_path)
 
         print("transcribing file segments...")
-        transcribe_all(split_path)
+        transcribe_all(split_path, file)
 
 
 if __name__ == "__main__":

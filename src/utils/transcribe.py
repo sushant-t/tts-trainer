@@ -15,7 +15,7 @@ def transcribe_file(file_path) -> str:
     return result["text"]
 
 
-def transcribe_all(wavs_path):
+def transcribe_all(wavs_path, raw_file):
     metadata_path = os.path.abspath(os.path.join(wavs_path, "..", "metadata.csv"))
 
     columns = ["file_name", "transcription", "normalized_transcription"]
@@ -24,8 +24,13 @@ def transcribe_all(wavs_path):
     else:
         metadata: pd.DataFrame = pd.DataFrame(columns=columns)
 
+    ### we need to make sure we are only transcribing files created from the current raw file
     files = sorted(
-        os.listdir(wavs_path),
+        [
+            wav
+            for wav in os.listdir(wavs_path)
+            if wav.startswith(os.path.splitext(raw_file)[0])
+        ],
         key=lambda k: int(
             os.path.splitext(k)[0].split("_")[-1]
         ),  # sort by the chunk number
@@ -33,19 +38,20 @@ def transcribe_all(wavs_path):
 
     for file in files:
         transcription = transcribe_file(os.path.join(wavs_path, file)).strip()
+        file_name = os.path.splitext(file)[0]
         data = {
-            "file_name": os.path.splitext(file)[0],
+            "file_name": file_name,
             "transcription": transcription,
             "normalized_transcription": transcription,
         }
-        if not metadata.loc[metadata["file_name"] == file].empty:
-            metadata.loc[metadata["file_name"] == file, list(data.keys())] = list(
+        if not metadata.loc[metadata["file_name"] == file_name].empty:
+            metadata.loc[metadata["file_name"] == file_name, list(data.keys())] = list(
                 data.values()
             )
-            print(metadata.loc[metadata["file_name"] == file])
+            print(metadata.loc[metadata["file_name"] == file_name])
         else:
             metadata.loc[len(metadata)] = {
-                "file_name": os.path.splitext(file)[0],
+                "file_name": file_name,
                 "transcription": transcription,
                 "normalized_transcription": transcription,
             }
