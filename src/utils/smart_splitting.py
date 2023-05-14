@@ -25,9 +25,6 @@ def process_split(filepath):
 
     speaker_name = re.search(r"(.*?)_[0-9]+", base_name).groups()[0]
     wavs_path = os.path.join(ROOT_DIR, "./dataset/{0}/wavs".format(speaker_name))
-    files = glob.glob("{0}/*".format(wavs_path))
-    for f in files:
-        os.remove(f)
 
     for i, chunk in enumerate(chunks):
         # Create a silence chunk that's 0.5 seconds (or 500 ms) long for padding.
