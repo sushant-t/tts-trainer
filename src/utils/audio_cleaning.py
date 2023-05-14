@@ -6,6 +6,8 @@ import soundfile as sf
 import noisereduce as nr
 import re
 
+from src.diarization.diarize import generate_speaker_timestamps
+
 
 def convert_to_wav(audio_path):
     sound = AudioSegment.from_file(audio_path)
@@ -30,9 +32,7 @@ def organize_input_samples(input_folder):
     for f in os.listdir(input_folder):
         src_path = os.path.join(input_folder, f)
         dst_path = os.path.join(raw_folder, f)
-        if os.path.isfile(os.path.join(input_folder, f)) and re.search(
-            r"\.(?:wav|mp3|aiff|ogg)$", f
-        ):
+        if os.path.isfile(os.path.join(input_folder, f)) and is_audio_file(f):
             os.rename(src_path, dst_path)
 
 
@@ -107,3 +107,21 @@ def save_trimmed_audio(wav_path, audio_segment):
     )
 
     return output_path
+
+
+def is_audio_file(audio_path):
+    return not not re.search(r"\.(?:wav|mp3|aiff|ogg)$", audio_path)
+
+
+def clean_audio(audio_path):
+    output_path = filter_noise(audio_path)
+
+    filtered_speaker_turns = generate_speaker_timestamps(output_path)
+
+    audio = AudioSegment.from_file(output_path)
+    audio = normalize_audio(audio, -20.0)
+    trimmed_output = trim_audio_from_diarization(audio, filtered_speaker_turns)
+
+    trimmed_output_path = save_trimmed_audio(output_path, trimmed_output)
+
+    return trimmed_output_path
