@@ -56,9 +56,11 @@ def rename_input_samples(speaker_name, input_folder):
         os.rename(src_path, dst_path)
 
 
-def filter_noise(audio_path):
+def filter_noise(audio_path, prop_decrease=0.7):
     data, sampling_rate = librosa.load(audio_path, mono=True)
-    reduced_noise = nr.reduce_noise(y=data, sr=sampling_rate, prop_decrease=0.7)
+    reduced_noise = nr.reduce_noise(
+        y=data, sr=sampling_rate, prop_decrease=prop_decrease
+    )
     return (reduced_noise, sampling_rate)
 
 
@@ -107,7 +109,7 @@ def is_audio_file(audio_path):
 
 
 def clean_audio(audio_path):
-    audio_data = filter_noise(audio_path)
+    audio_data = filter_noise(audio_path, prop_decrease=0.4)
     if len(audio_data[0].shape) == 1:
         audio_data = (audio_data[0].reshape(1, -1), audio_data[1])
     filtered_speaker_turns = generate_speaker_timestamps(audio_data)
