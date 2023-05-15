@@ -3,7 +3,11 @@ import pandas as pd
 import os
 from src.config.definitions import ROOT_DIR
 
-model = whisper.load_model("base")
+whisper_path = os.path.join(ROOT_DIR, "models/base.pt")
+if os.path.exists(whisper_path):
+    model = whisper.load_model(whisper_path)
+else:
+    model = whisper.load_model("base")
 
 
 def transcribe_file(file_path) -> str:
