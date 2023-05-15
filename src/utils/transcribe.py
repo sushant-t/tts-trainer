@@ -38,6 +38,10 @@ def transcribe_all(wavs_path, raw_file):
 
     for file in files:
         transcription = transcribe_file(os.path.join(wavs_path, file)).strip()
+        ### remove bad audio files that don't have valid transcription
+        if not transcription:  # not valid
+            os.remove(os.path.join(wavs_path, file))
+            continue
         file_name = os.path.splitext(file)[0]
         data = {
             "file_name": file_name,
