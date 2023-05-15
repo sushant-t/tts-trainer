@@ -28,7 +28,8 @@ def diarize_audio(audio_data):
     if torch.cuda.is_available():
         diarize_pipeline = diarize_pipeline.to(0)
 
-    dia = diarize_pipeline({"waveform": audio_data[0], "sample_rate": audio_data[1]})
+    torch_tensor = torch.from_numpy(audio_data[0])
+    dia = diarize_pipeline({"waveform": torch_tensor, "sample_rate": audio_data[1]})
     assert isinstance(dia, Annotation)
 
     speaker_turns = []

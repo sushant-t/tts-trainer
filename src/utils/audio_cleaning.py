@@ -108,10 +108,12 @@ def is_audio_file(audio_path):
 
 def clean_audio(audio_path):
     audio_data = filter_noise(audio_path)
+    if len(audio_data[0].shape) == 1:
+        audio_data = (audio_data[0].reshape(1, -1), audio_data[1])
     filtered_speaker_turns = generate_speaker_timestamps(audio_data)
 
     audio_arr, sample_rate = audio_data
-    num_channels = audio_arr[0] if len(audio_arr.shape) > 1 else 1
+    num_channels = audio_arr.shape[0]
     audio_arr = np.array(audio_arr * (1 << 15), dtype=np.int16)
 
     audio_segment = AudioSegment(
