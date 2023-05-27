@@ -55,12 +55,10 @@ if __name__ == "__main__":
         help="overwrite any duplicates in dataset",
     )
     args = parser.parse_args()
-    full_path = (
-        os.path.join(ROOT_DIR, args.input_folder)
-        if os.path.exists(os.path.join(ROOT_DIR, args.input_folder))
-        else os.path.exists(os.path.join(os.getcwd(), args.input_folder))
-    )
+
+    full_path = os.path.abspath(os.path.join(ROOT_DIR, "samples", args.input_folder))
+
     if args.input_folder and os.path.exists(full_path):
-        generate_data(input_folder=args.input_folder, overwrite=args.overwrite)
+        generate_data(input_folder=full_path, overwrite=args.overwrite)
     else:
         print("Invalid input file")
